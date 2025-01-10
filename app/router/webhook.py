@@ -44,7 +44,7 @@ def notify_service(user_id):
         logging.error(f"Failed to notify service: {str(e)}")
 
 
-@webhook_bp.route('/webhook', methods=['POST'])
+@webhook_bp.route('/hook/messages', methods=['POST'])
 def webhook():
     data = request.json
     result = process_webhook(data)

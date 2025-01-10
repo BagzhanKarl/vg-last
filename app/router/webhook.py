@@ -36,7 +36,7 @@ def notify_service(user_id):
     try:
         # time.sleep(10)
         response = requests.post(
-            'http://localhost:8008/process-messages',  # ваш URL
+            'https://vg.assemcrm.kz/process-messages',  # ваш URL
             json={'user_id': user_id}
         )
         response.raise_for_status()

@@ -5,7 +5,7 @@ class AssemWhatsApp:
     def __init__(self):
         self.token = 'THjJOt2vo26nYYj4IbqKXVqInFv1wx55'
         self.url = 'https://gate.whapi.cloud/messages/'
-        self.typing_time = 2
+        self.typing_time = 8
         self.headers = {
             "accept": "application/json",
             "content-type": "application/json",

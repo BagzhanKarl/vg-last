@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% set title = 'Пользователи' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Пользователи</h1>
+    <p class="page-description">Управление пользователями и их чатами</p>
+</div>
+
+<div class="users-grid">
+    {% for user in response %}
+    <div class="user-card">
+        <div class="user-card-header">
+            <div class="user-card-icon">
+                <ion-icon name="person-outline"></ion-icon>
+            </div>
+            <div>
+                <h3 class="user-card-title">{{user.name}}</h3>
+                <div class="user-card-phone">{{ user.phone }}</div>
+            </div>
+        </div>
+        <div class="user-card-actions">
+            <a href="/admin/users/{{ user.id }}/chat" style="text-decoration: none" class="btn-chat">
+                <ion-icon name="chatbubbles-outline"></ion-icon>
+                Открыть чат
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block css %}
+<style>
+    /* ... Предыдущие стили ... */
+
+/* User Cards */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+.user-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-color);
+}
+
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.user-card:hover::before {
+    opacity: 1;
+}
+
+.user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--hover-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.user-card-icon ion-icon {
+    font-size: 1.75rem;
+}
+
+.user-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.user-card-phone {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.user-card-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-chat {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-chat:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.btn-chat ion-icon {
+    font-size: 1.25rem;
+}
+
+/* Page Header */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.page-description {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .users-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block js %}
+<script>
+    // Обработчики событий для кнопок, если потребуются
+    document.querySelectorAll('.btn-chat').forEach(button => {
+        button.addEventListener('click', function() {
+            // Здесь можно добавить логику открытия чата
+            console.log('Opening chat...');
+        });
+    });
+</script>
+{% endblock %}

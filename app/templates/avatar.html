@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% set title = 'AI-VG - Аватар' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Настройки аватара</h1>
+    <p class="page-description">Настройте поведение и характеристики вашего виртуального помощника</p>
+</div>
+
+<div class="settings-card">
+    <div class="card-body p-4">
+        <form action="/admin/avatar/edit" method="POST" id="avatarForm">
+            <div class="form-group">
+                <label class="form-label" for="avatarName">Имя аватара</label>
+                <input type="text" name="name-avatar" class="form-control" id="avatarName" value="{{ avatar.name }}" placeholder="Введите имя аватара">
+                <div class="form-help">Аватар будет использовать это имя, чтобы представиться.</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="avatarRole">Роль или задача аватара</label>
+                <div class="textarea-wrapper">
+                    <textarea
+                        name="role"
+                        id="avatarRole"
+                        class="form-control"
+                        maxlength="1500"
+                        placeholder="Опишите роль или задачи аватара для правильного формирования ответов.">{{ avatar.avatarRole }}</textarea>
+                    <div class="char-counter" id="avatarRoleCounter">0 / 1500 символов</div>
+                </div>
+                <div class="form-help">Укажите стиль общения, уровень формальности и особенности поведения</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="firstMessage">Первое сообщение</label>
+                <div class="textarea-wrapper">
+                    <textarea
+                        name="first-message"
+                        id="firstMessage"
+                        class="form-control"
+                        maxlength="500"
+                        placeholder="Введите приветственное сообщение, которое аватар будет отправлять при начале диалога">{{ avatar.first_message }}</textarea>
+                    <div class="char-counter" id="firstMessageCounter">0 / 500 символов</div>
+                </div>
+                <div class="form-help">Это сообщение пользователь увидит первым при начале диалога</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="behavior">Как себя должен вести аватар</label>
+                <div class="textarea-wrapper">
+                    <textarea
+                        name="behavior"
+                        id="behavior"
+                        class="form-control"
+                        maxlength="1500"
+                        placeholder="Опишите желаемое поведение и тон общения аватара">{{ avatar.how_to_behave }}</textarea>
+                    <div class="char-counter" id="behaviorCounter">0 / 1500 символов</div>
+                </div>
+                <div class="form-help">Укажите стиль общения, уровень формальности и особенности поведения</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="additional">Дополнительная информация</label>
+                <div class="textarea-wrapper">
+                    <textarea
+                        name="additional"
+                        id="additional"
+                        class="form-control"
+                        maxlength="1500"
+                        placeholder="Добавьте любую дополнительную информацию об аватаре">{{ avatar.additional_info }}</textarea>
+                    <div class="char-counter" id="additionalCounter">0 / 1500 символов</div>
+                </div>
+                <div class="form-help">Любые дополнительные детали, которые должен знать аватар</div>
+            </div>
+
+            <div class="form-group">
+                <label for="customRange1" class="form-label">Температура: <span id="current_temp"></span></label>
+                <input type="range" class="form-range" id="customRange1" min="0.0" max="2.0" step="0.1" value="{{ avatar.temp }}">
+                <div class="form-help">
+                    Температура — это параметр, который контролирует креативность или случайность ответов, генерируемых LLM.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="">Выберите язык</label>
+                <div class="d-flex gap-3 align-items-center">
+                    <label class="cr-wrapper">
+                        <input type="checkbox" name="languages" value="Казахский язык" checked>
+                        <div class="cr-input"></div>
+                        <span>Қазақша / Казахский</span>
+                    </label>
+                    <label class="cr-wrapper">
+                        <input type="checkbox" name="languages" value="Русский язык" checked>
+                        <div class="cr-input"></div>
+                        <span>Русский / Русский</span>
+                    </label>
+                    <label class="cr-wrapper">
+                        <input type="checkbox" name="languages" value="Английский язык">
+                        <div class="cr-input"></div>
+                        <span>English / Английский</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn-save">
+                <ion-icon name="save-outline"></ion-icon>
+                Сохранить изменения
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block css %}
+    <style>
+    input[type=range] {
+  height: 23px;
+  -webkit-appearance: none;
+  margin: 10px 0;
+  width: 100%;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #000000;
+  background: #D1D1D1;
+  border-radius: 8px;
+  border: 0px solid #000000;
+}
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0px #000000;
+  border: 0px solid #000000;
+  height: 17px;
+  width: 15px;
+  border-radius: 50px;
+  background: #10B981;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -5.5px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #D1D1D1;
+}
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #000000;
+  background: #D1D1D1;
+  border-radius: 8px;
+  border: 0px solid #000000;
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 0px 0px 0px #000000;
+  border: 0px solid #000000;
+  height: 17px;
+  width: 15px;
+  border-radius: 50px;
+  background: #10B981;
+  cursor: pointer;
+}
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  animate: 0.2s;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #D1D1D1;
+  border: 0px solid #000000;
+  border-radius: 16px;
+  box-shadow: 0px 0px 0px #000000;
+}
+input[type=range]::-ms-fill-upper {
+  background: #D1D1D1;
+  border: 0px solid #000000;
+  border-radius: 16px;
+  box-shadow: 0px 0px 0px #000000;
+}
+input[type=range]::-ms-thumb {
+  margin-top: 1px;
+  box-shadow: 0px 0px 0px #000000;
+  border: 0px solid #000000;
+  height: 17px;
+  width: 15px;
+  border-radius: 50px;
+  background: #10B981;
+  cursor: pointer;
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: #D1D1D1;
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: #D1D1D1;
+}
+
+    </style>
+{% endblock %}
+{% block js %}
+<script>
+function getSelectedLanguages() {
+    return $('input[name="languages"]:checked').map(function () {
+        return $(this).val();
+    }).get().join(', ');  // Преобразуем массив в строку через join()
+}
+
+function save_data_on_db(){
+    return new Promise((resolve, reject) => {
+        let avatar_name = $('#avatarName').val();
+        let first_message = $('#firstMessage').val();
+        let behavior = $('#behavior').val();
+        let avatarRole = $('#avatarRole').val();
+        let additional = $('#additional').val();
+        let temp = $('#customRange1').val();
+        let lang = getSelectedLanguages();
+
+        $.ajax({
+            url: '/admin/avatar/edit',
+            method: 'POST',
+            data: {
+                avatar_name: avatar_name,
+                avatarRole: avatarRole,
+                first_message: first_message,
+                behavior: behavior,
+                additional: additional,
+                temp: temp,
+                lang: lang,
+            },
+            success: function(response){
+                console.log('Сделано');
+                resolve(response);
+            },
+            error: function(xhr, status, error){
+                console.error('Ошибка:', error);
+                reject(error);
+            }
+        });
+    });
+}
+
+// Функция для обновления счетчика символов
+function updateCounter(textarea, counterId, maxLength) {
+    const counter = document.getElementById(counterId);
+    const currentLength = textarea.value.length;
+    counter.textContent = `${currentLength} / ${maxLength} символов`;
+
+    // Изменение цвета счетчика в зависимости от количества символов
+    if (currentLength >= maxLength) {
+        counter.className = 'char-counter danger';
+    } else if (currentLength >= maxLength * 0.9) {
+        counter.className = 'char-counter warning';
+    } else {
+        counter.className = 'char-counter';
+    }
+}
+
+// Инициализация счетчиков
+const textareas = [
+    {id: 'firstMessage', counter: 'firstMessageCounter', max: 500},
+    {id: 'behavior', counter: 'behaviorCounter', max: 1500},
+    {id: 'additional', counter: 'additionalCounter', max: 1500},
+    {id: 'avatarRole', counter: 'avatarRoleCounter', max: 1500}
+];
+
+textareas.forEach(({id, counter, max}) => {
+    const textarea = document.getElementById(id);
+    textarea.addEventListener('input', () => updateCounter(textarea, counter, max));
+    // Инициализация начального значения
+    updateCounter(textarea, counter, max);
+});
+
+// Обработчик отправки формы
+document.getElementById('avatarForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const button = document.querySelector('.btn-save');
+    button.style.pointerEvents = 'none';
+    button.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Сохранение...';
+
+    save_data_on_db();
+    setTimeout(() => {
+        button.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Сохранено!';
+        button.style.backgroundColor = '#059669';
+
+        setTimeout(() => {
+            button.innerHTML = '<ion-icon name="save-outline"></ion-icon> Сохранить изменения';
+            button.style.pointerEvents = 'auto';
+            button.style.backgroundColor = '';
+        }, 2000);
+    }, 1000);
+});
+</script>
+<script>
+    const rangeInput = document.getElementById('customRange1');
+    const currentTemp = document.getElementById('current_temp');
+
+    // Отображаем начальное значение
+    currentTemp.textContent = rangeInput.value;
+
+    // Обновляем значение при изменении ползунка
+    rangeInput.addEventListener('input', () => {
+        currentTemp.textContent = rangeInput.value;
+    });
+</script>
+{% endblock %}

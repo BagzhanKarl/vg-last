@@ -79,6 +79,8 @@ def process_webhook(webhook_data: Dict) -> Union[Dict, None]:
             )
             message.save_to_db()
 
+
+
             # Логируем создание сообщения
             log = UserLog(
                 user_id=user.id,

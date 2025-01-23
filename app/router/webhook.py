@@ -7,7 +7,8 @@ from functools import wraps
 from threading import Thread
 from flask import Blueprint, request, jsonify
 
-from app.db import process_webhook, Messages, User, UserLog
+from app import db
+from app.db import process_webhook, Messages, User, UserLog, Balance, calculate_tokens_and_cost
 from app.service import AssemAI
 from app.service.assemwhapsapp import AssemWhatsApp
 
@@ -96,6 +97,16 @@ def process_messages_checker():
         # Отправка сообщения
         send_message = AssemWhatsApp()
         result = send_message.send_text(ai_response, user.chat_id)
+
+        tokens_in = sum(len(m.content) for m in messages)
+        balance = Balance(
+            user_id=user_id,
+            tokens_in=tokens_in,
+            tokens_out=len(ai_response),
+            cost_tenge=calculate_tokens_and_cost(ai_response)[1]
+        )
+        db.session.add(balance)
+        db.session.commit()
 
         # Логируем отправку
         log = UserLog(

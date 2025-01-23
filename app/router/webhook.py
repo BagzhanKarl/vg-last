@@ -72,7 +72,10 @@ def process_messages_checker():
         )
         log.save_to_db()
 
-        messages = Messages.query.filter_by(user_id=user_id).all()
+        messages = Messages.query.filter_by(user_id=user_id) \
+            .order_by(Messages.created_at.desc()) \
+            .limit(30).all()
+        messages.reverse()  # Восстанавливаем хронологический порядок
         response = [{'role': m.role, 'content': m.content} for m in messages]
 
         assistant = AssemAI(api_key=api_key, assistant_id=assistant_id)

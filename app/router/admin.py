@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, make_response, redirect
 import os
 from app.db import Avatar, User, Messages, UserLog
 from app.service import AssemAI
@@ -16,10 +16,28 @@ def format_phone_number(phone):
 
 @admin.route('/')
 def admin_index():
-    return render_template('base.html')
+    return render_template('login.html')
+
+@admin.route('/auth/system', methods=['POST'])
+def auth_system():
+    data = request.form.to_dict()
+    email = data['email']
+    password = data['password']
+    if email == 'vg@assemcrm.kz':
+        if password == '123456789':
+            response = make_response(redirect('/admin/users'))
+            response.set_cookie('userid', '1859', max_age=3600)
+            return response
+        else:
+            return make_response(redirect('/admin/'))
+    else:
+       return make_response(redirect('/admin/'))
 
 @admin.route('/users')
 def admin_users():
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     users = User.query.all()
     response = []
     for user in users:
@@ -34,6 +52,9 @@ def admin_users():
 
 @admin.route('/users/<int:id>/chat')
 def admin_users_chat(id):
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     user = User.query.get(id)
     messages = Messages.query.filter_by(user_id=user.id).all()
     user = {
@@ -48,11 +69,17 @@ def admin_users_chat(id):
 
 @admin.route('/avatar')
 def admin_avatar():
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     active_avatar = Avatar.query.filter_by(is_active=True).first()
     return render_template('avatar.html', avatar=active_avatar)
 
 @admin.route('/avatar/edit', methods=['POST'])
 def admin_avatar_edit():
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     # Получаем все данные из формы как MultiDict (стандартный тип для request.form)
     avatar_name = request.form.get('avatar_name')
     role_or_position = request.form.get('avatarRole')
@@ -104,6 +131,9 @@ def admin_avatar_edit():
 
 @admin.route('/avatar/check', methods=['GET'])
 def admin_avatar_check():
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     avatar = Avatar.query.filter_by(is_active=True).first()
     response = (f'Привет! Тебя зовут: {avatar.name}! Вы: {avatar.role_or_position}! Вы должны вести себя: {avatar.how_to_behave}, '
                 f'Говорите на "{avatar.lang}", от зависимости пользователя. У вас есть документ который иногда можете искать информацию, чтобы дать точный ответ для пользователя. Документ называется "Стандарт по Бережливому Производству", '
@@ -115,11 +145,17 @@ def admin_avatar_check():
 
 @admin.route('/key/check')
 def admin_key_check():
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     return jsonify({"api_key": assistant_id})
 
 
 @admin.route('/users/<int:id>/logs')
 def admin_users_logs(id):
+    user = request.cookies.get('userid')
+    if user is None:
+        return redirect('/admin/')
     user = User.query.get(id)
     logs = UserLog.query.filter_by(user_id=id).order_by(UserLog.created_at.desc()).all()
 

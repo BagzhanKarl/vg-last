@@ -7,7 +7,7 @@ from functools import wraps
 from threading import Thread
 from flask import Blueprint, request, jsonify
 
-from app.db import process_webhook, Messages, User
+from app.db import process_webhook, Messages, User, UserLog
 from app.service import AssemAI
 from app.service.assemwhapsapp import AssemWhatsApp
 
@@ -56,24 +56,63 @@ def webhook():
         notify_service(result['user_id'])
     return jsonify(result), 200
 
+
 @webhook_bp.route('/process-messages', methods=['POST'])
 def process_messages_checker():
     user_id = request.json['user_id']
-    user = User.query.filter_by(id=user_id).first()
-    messages = Messages.query.filter_by(user_id=user_id).all()
-    response = []
-    for message in messages:
-        response.append({
-            'role': message.role,
-            'content': message.content,
-        })
-    assistant = AssemAI(
-        api_key=api_key,
-        assistant_id=assistant_id,
-    )
-    ai = assistant.generate_response(message_history=response)
-    ai_message = Messages(role='assistant',content=ai,user_id=user_id)
-    ai_message.save_to_db()
-    send_message = AssemWhatsApp()
-    send_message.send_text(ai, user.chat_id)
-    return jsonify(response)
+    user = User.query.get(id)
+
+    try:
+        # Логируем начало генерации
+        log = UserLog(
+            user_id=user_id,
+            event_type='generation_started',
+            data={'user_id': user_id},
+            status='success'
+        )
+        log.save_to_db()
+
+        messages = Messages.query.filter_by(user_id=user_id).all()
+        response = [{'role': m.role, 'content': m.content} for m in messages]
+
+        assistant = AssemAI(api_key=api_key, assistant_id=assistant_id)
+        ai_response = assistant.generate_response(message_history=response)
+
+        # Логируем успешную генерацию
+        log = UserLog(
+            user_id=user_id,
+            event_type='generation_completed',
+            data={'response': ai_response},
+            status='success'
+        )
+        log.save_to_db()
+
+        ai_message = Messages(role='assistant', content=ai_response, user_id=user_id)
+        ai_message.save_to_db()
+
+        # Отправка сообщения
+        send_message = AssemWhatsApp()
+        result = send_message.send_text(ai_response, user.chat_id)
+
+        # Логируем отправку
+        log = UserLog(
+            user_id=user_id,
+            event_type='message_sent',
+            data={'whatsapp_response': result},
+            status='success' if result.get('success') else 'error'
+        )
+        log.save_to_db()
+
+        return jsonify(response)
+
+    except Exception as e:
+        # Логируем ошибку
+        log = UserLog(
+            user_id=user_id,
+            event_type='processing_error',
+            data={'error': str(e)},
+            status='error',
+            error_message=str(e)
+        )
+        log.save_to_db()
+        raise

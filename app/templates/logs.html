@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% set title = 'Логи пользователя' %}
+
+{% block content %}
+<div class="d-flex gap-5 align-items-center mb-4">
+    <div class="back">
+        <a href="/admin/users">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+        </a>
+    </div>
+    <div class="page-header">
+        <h1 class="page-title">Логи: {{user.name}}</h1>
+        <p class="page-description">{{user.phone}}</p>
+    </div>
+</div>
+
+<div class="logs-container">
+    {% for log in logs %}
+    <div class="log-item">
+        <div class="log-header">
+            <span class="log-type">{{ log.event_type }}</span>
+            <span class="log-status {{ 'success' if log.status == 'success' else 'error' }}">
+                {{ log.status }}
+            </span>
+            <span class="log-time">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+        </div>
+        <div class="log-data">
+            <pre>{{ log.data | tojson(indent=2) }}</pre>
+        </div>
+        {% if log.error_message %}
+        <div class="log-error">
+            {{ log.error_message }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block css %}
+<style>
+.logs-container {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.log-item {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.log-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.log-type {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.log-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.log-status.success {
+    background: #10B981;
+    color: white;
+}
+
+.log-status.error {
+    background: #EF4444;
+    color: white;
+}
+
+.log-time {
+    color: var(--text-secondary);
+}
+
+.log-data {
+    background: var(--hover-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+}
+
+.log-error {
+    color: #EF4444;
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}

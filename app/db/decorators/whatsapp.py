@@ -1,7 +1,7 @@
 from typing import Dict, Optional, Union
 from datetime import datetime
 
-from app.db import User, Messages, Queue
+from app.db import User, Messages, Queue, UserLog
 
 
 class WebhookHandler:
@@ -43,30 +43,26 @@ class WebhookHandler:
         )
 
 
+# app/service/whatsapp.py
 def process_webhook(webhook_data: Dict) -> Union[Dict, None]:
-    """
-    Обработка входящего веб-хука
-
-    Args:
-        webhook_data (Dict): Данные веб-хука
-
-    Returns:
-        Dict: Результат обработки или None в случае ошибки
-    """
     try:
         handler = WebhookHandler(webhook_data)
-
-        # Получаем данные пользователя
         user_data = handler.get_user_data()
-
         for_me = handler.check_sender()
-        if for_me:
 
-            # Ищем пользователя по телефону
+        if for_me:
             existing_user = User.query.filter_by(phone=user_data['phone']).first()
 
+            # Логируем входящий webhook
+            log = UserLog(
+                user_id=existing_user.id if existing_user else None,
+                event_type='webhook_received',
+                data=webhook_data,
+                status='success'
+            )
+            log.save_to_db()
+
             if not existing_user:
-                # Создаем нового пользователя
                 user = User(
                     name=user_data['name'],
                     phone=user_data['phone'],
@@ -76,7 +72,6 @@ def process_webhook(webhook_data: Dict) -> Union[Dict, None]:
             else:
                 user = existing_user
 
-            # Сохраняем сообщение
             message = Messages(
                 role='user',
                 content=handler.get_message_text(),
@@ -84,25 +79,28 @@ def process_webhook(webhook_data: Dict) -> Union[Dict, None]:
             )
             message.save_to_db()
 
-            set_queue = Queue(
+            # Логируем создание сообщения
+            log = UserLog(
                 user_id=user.id,
-                is_active=True
+                event_type='message_created',
+                data={'message_id': message.id, 'content': message.content},
+                status='success'
             )
-            set_queue.save_to_db()
+            log.save_to_db()
 
             return {
                 'status': 'success',
                 'user_id': user.id,
-                'is_text_message': handler.is_valid_message(),
-                'queue_id': set_queue.id,
+                'is_text_message': handler.is_valid_message()
             }
-        else:
-            return {
-                'status': 'fail',
-                'detail': 'Сообщению отправили мы!',
-            }
-
     except Exception as e:
-        print(f"Error processing webhook: {str(e)}")
+        # Логируем ошибку
+        log = UserLog(
+            user_id=user.id if 'user' in locals() else None,
+            event_type='webhook_error',
+            data={'error': str(e)},
+            status='error',
+            error_message=str(e)
+        )
+        log.save_to_db()
         return None
-

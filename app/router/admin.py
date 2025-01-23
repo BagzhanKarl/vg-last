@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request
 import os
-from app.db import Avatar, User, Messages
+from app.db import Avatar, User, Messages, UserLog
 from app.service import AssemAI
 
 api_key = os.getenv('OPENAI_API_KEY')
@@ -116,3 +116,15 @@ def admin_avatar_check():
 @admin.route('/key/check')
 def admin_key_check():
     return jsonify({"api_key": assistant_id})
+
+
+@admin.route('/users/<int:id>/logs')
+def admin_users_logs(id):
+    user = User.query.get(id)
+    logs = UserLog.query.filter_by(user_id=id).order_by(UserLog.created_at.desc()).all()
+
+    return render_template(
+        'logs.html',
+        user=user,
+        logs=logs
+    )

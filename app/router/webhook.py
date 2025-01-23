@@ -60,7 +60,7 @@ def webhook():
 @webhook_bp.route('/process-messages', methods=['POST'])
 def process_messages_checker():
     user_id = request.json['user_id']
-    user = User.query.get(id)
+    user = User.query.get(user_id)
 
     try:
         # Логируем начало генерации
